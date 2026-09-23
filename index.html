@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <title>三看面谈逻辑</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><text x='50' y='68' text-anchor='middle' font-size='50' fill='white'>三看</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior: none;
+        }
+
+        /* 顶部导航 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: env(safe-area-inset-top, 12px) 16px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+
+        .header-title {
+            color: #fff;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-btn:active {
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* 内容区 */
+        .content {
+            padding: 70px 12px 30px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* 根节点 */
+        .root-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #fff;
+            padding: 20px 24px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.2);
+        }
+
+        .root-card h1 {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 3px;
+        }
+
+        .root-card p {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 6px;
+        }
+
+        /* 一级分支 */
+        .branch {
+            margin-bottom: 12px;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .level1-header {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            transition: opacity 0.2s;
+        }
+
+        .level1-header:active { opacity: 0.85; }
+
+        .level1-header .icon { font-size: 20px; }
+
+        .level1-header .arrow {
+            margin-left: auto;
+            font-size: 12px;
+            transition: transform 0.3s;
+            opacity: 0.8;
+        }
+
+        .branch.open .level1-header .arrow { transform: rotate(90deg); }
+
+        .branch-trend .level1-header { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+        .branch-income .level1-header { background: linear-gradient(135deg, #047857, #10b981); }
+        .branch-dev .level1-header { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
+
+        /* 子内容 */
+        .branch-body {
+            background: #fff;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .branch.open .branch-body {
+            max-height: 5000px;
+        }
+
+        .branch-body-inner {
+            padding: 12px 14px 16px;
+        }
+
+        /* 二级节点 */
+        .level2-group {
+            margin-bottom: 10px;
+        }
+
+        .level2-header {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 14px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .level2-header:active { transform: scale(0.98); }
+
+        .level2-header .arrow {
+            margin-left: auto;
+            font-size: 10px;
+            transition: transform 0.3s;
+            color: #94a3b8;
+        }
+
+        .level2-group.open .level2-header .arrow { transform: rotate(90deg); }
+
+        .branch-trend .level2-header { background: #eff6ff; color: #1e40af; border: 1.5px solid #bfdbfe; }
+        .branch-income .level2-header { background: #ecfdf5; color: #047857; border: 1.5px solid #a7f3d0; }
+        .branch-dev .level2-header { background: #f5f3ff; color: #6d28d9; border: 1.5px solid #ddd6fe; }
+
+        /* 三级内容 */
+        .level3-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+
+        .level2-group.open .level3-content {
+            max-height: 2000px;
+        }
+
+        .level3-inner {
+            padding: 8px 0 4px 12px;
+            border-left: 2px solid #e2e8f0;
+            margin-left: 14px;
+            margin-top: 6px;
+        }
+
+        .branch-trend .level3-inner { border-left-color: #93c5fd; }
+        .branch-income .level3-inner { border-left-color: #6ee7b7; }
+        .branch-dev .level3-inner { border-left-color: #c4b5fd; }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            padding: 6px 10px;
+            background: #f8fafc;
+            border-radius: 6px;
+            margin: 6px 0 4px;
+        }
+
+        .tool-tag {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            margin-left: 6px;
+            font-weight: 500;
+            vertical-align: middle;
+        }
+
+        .leaf-list {
+            list-style: none;
+            padding: 0 0 6px 6px;
+        }
+
+        .leaf-list li {
+            font-size: 12.5px;
+            color: #475569;
+            line-height: 1.8;
+            padding: 2px 0 2px 16px;
+            position: relative;
+        }
+
+        .leaf-list li::before {
+            content: '•';
+            position: absolute;
+            left: 2px;
+            font-weight: bold;
+        }
+
+        .branch-trend .leaf-list li::before { color: #3b82f6; }
+        .branch-income .leaf-list li::before { color: #10b981; }
+        .branch-dev .leaf-list li::before { color: #8b5cf6; }
+
+        .hl { color: #dc2626; font-weight: 700; }
+
+        /* 底部安装提示 */
+        .install-banner {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            padding: 12px 16px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+            text-align: center;
+        }
+
+        .install-banner.show { display: block; }
+
+        .install-btn {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: #fff;
+            border: none;
+            padding: 12px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 10px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .install-btn:active { opacity: 0.9; }
+
+        /* 搜索弹窗 */
+        .search-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            padding: 60px 16px 16px;
+        }
+
+        .search-overlay.show { display: block; }
+
+        .search-box {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .search-input:focus { border-color: #3b82f6; }
+
+        .search-results {
+            margin-top: 12px;
+        }
+
+        .search-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .search-item mark {
+            background: #fef08a;
+            color: #000;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .search-empty {
+            text-align: center;
+            padding: 30px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .close-search {
+            display: block;
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #475569;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <div class="header">
+        <span class="header-title">三看面谈逻辑</span>
+        <div class="header-actions">
+            <button class="header-btn" onclick="toggleSearch()">🔍 搜索</button>
+            <button class="header-btn" onclick="toggleAll()">📂 全部展开</button>
+        </div>
+    </div>
+
+    <!-- 搜索弹窗 -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="输入关键词搜索..." oninput="doSearch()">
+            <div class="search-results" id="searchResults">
+                <div class="search-empty">输入关键词开始搜索</div>
+            </div>
+            <button class="close-search" onclick="toggleSearch()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="content">
+        <div class="root-card">
+            <h1>三看面谈逻辑</h1>
+            <p>医养生态合伙人 / 医养创业合伙人</p>
+        </div>
+
+        <!-- ===== 看趋势 ===== -->
+        <div class="branch branch-trend open" id="b1">
+            <div class="level1-header" onclick="toggleBranch('b1')">
+                <span class="icon">📈</span>
+                <span>看趋势</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="branch-body">
+                <div class="branch-body-inner">
+                    <!-- 国策 -->
+                    <div class="level2-group open" id="l2_1">
+                        <div class="level2-header" onclick="toggleL2('l2_1')">
+                            <span>🏛️ 国策</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <div class="section-title">老龄化三大特征</div>
+                                <ul class="leaf-list">
+                                    <li>规模巨大：60岁以上<span class="hl">3.1亿</span>，占22%</li>
+                                    <li>速度极快：7%→14%仅用<span class="hl">21年</span></li>
+                                    <li>未富先老：人均GDP仅<span class="hl">1000美元</span></li>
+                                </ul>
+                                <div class="section-title">国家战略定调</div>
+                                <ul class="leaf-list">
+                                    <li>健康中国：以人民健康为中心</li>
+                                    <li>万亿市场：密集出台<span class="hl">20+项</span>扶持政策</li>
+                                    <li>每县1家：2027年底目标达成</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 医养 -->
+                    <div class="level2-group open" id="l2_2">
+                        <div class="level2-header" onclick="toggleL2('l2_2')">
+                            <span>🏥 医养</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <div class="section-title">医养四大"刚需"</div>
+                                <ul class="leaf-list">
+                                    <li>人口刚需：421家庭结构，照护力量不足</li>
+                                    <li>健康刚需：慢病监测、康复护理一体化</li>
+                                    <li>现实刚需：养老与医疗不割裂，一站式闭环</li>
+                                    <li>财富刚需：提前锁定医养资源，对冲大额支出</li>
+                                </ul>
+                                <div class="section-title">前海医养三大优势</div>
+                                <ul class="leaf-list">
+                                    <li>全国布局：<span class="hl">10城19家</span>机构</li>
+                                    <li>同园共建：医院与养老社区同园，前"医"后"养"</li>
+                                    <li>医养融合：<span class="hl">60秒</span>快速急救响应</li>
+                                </ul>
+                                <div class="section-title">专属"两全"权益</div>
+                                <ul class="leaf-list">
+                                    <li>全场景健康生态：保检管医养，满足个性化需求</li>
+                                    <li>全生命周期护航：一站式终身解决方案</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 模式 -->
+                    <div class="level2-group open" id="l2_3">
+                        <div class="level2-header" onclick="toggleL2('l2_3')">
+                            <span>💡 模式</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <div class="section-title">体验式营销三大优势</div>
+                                <ul class="leaf-list">
+                                    <li>破信任：降低沟通门槛，消除客户抵触</li>
+                                    <li>显价值：实景感知医养权益，精准匹配方案</li>
+                                    <li>提增长：撬动口碑转介绍，打造差异化优势</li>
+                                </ul>
+                                <div class="section-title">体验式营销三大场景</div>
+                                <ul class="leaf-list">
+                                    <li>数字化获客：短视频、直播及社媒矩阵引流</li>
+                                    <li>云端VR体验：沉浸式云游，降低决策门槛</li>
+                                    <li>实地参观：南宁康养社区/惠州旅居活动</li>
+                                </ul>
+                                <div class="section-title">体验式营销成果</div>
+                                <ul class="leaf-list">
+                                    <li>千万保单1件、600万保单2件、400万保单2件</li>
+                                    <li>200万保单18件、100万保单37件</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 看收入 ===== -->
+        <div class="branch branch-income" id="b2">
+            <div class="level1-header" onclick="toggleBranch('b2')">
+                <span class="icon">💰</span>
+                <span>看收入</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="branch-body">
+                <div class="branch-body-inner">
+                    <!-- 过去 -->
+                    <div class="level2-group" id="l2_4">
+                        <div class="level2-header" onclick="toggleL2('l2_4')">
+                            <span>⏪ 过去</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <div class="section-title">历年引进总监</div>
+                                <ul class="leaf-list">
+                                    <li>22年以来累计引进总监<span class="hl">155人</span></li>
+                                    <li>年度人均收入<span class="hl">15.9万元</span></li>
+                                    <li>年均50万以上15人、30万以上24人、10万以上45人</li>
+                                </ul>
+                                <div class="section-title">优秀总监典范</div>
+                                <ul class="leaf-list">
+                                    <li>收入前十总监三年人均年收入<span class="hl">48万元</span></li>
+                                    <li>最高三年累计<span class="hl">220万</span>、年均74万</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 现在 -->
+                    <div class="level2-group" id="l2_5">
+                        <div class="level2-header" onclick="toggleL2('l2_5')">
+                            <span>▶️ 现在</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <div class="section-title">总监创富秘笈1 <span class="tool-tag">工具-邓2025收入</span></div>
+                                <ul class="leaf-list">
+                                    <li>时间杠杆：每年火力全开4个月，实现近百万收入</li>
+                                    <li>收入超高：可超过所交保费，超额回报</li>
+                                    <li>节点红利：把握关键节点，与政策窗口同频</li>
+                                </ul>
+                                <div class="section-title">总监创富秘笈2 <span class="tool-tag">工具-月度收入项目分析</span></div>
+                                <ul class="leaf-list">
+                                    <li>个人绩优：凭专业销售实现月度稳定高产</li>
+                                    <li>团队共富：靠组织裂变放大"短期+长期"收益</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 未来 -->
+                    <div class="level2-group" id="l2_6">
+                        <div class="level2-header" onclick="toggleL2('l2_6')">
+                            <span>⏩ 未来</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <div class="section-title">医养政策要点 <span class="tool-tag">工具-宣导片+海报+文案</span></div>
+                                <ul class="leaf-list">
+                                    <li>超长期间：奖励周期<span class="hl">5年60个月</span></li>
+                                    <li>超低起步：<span class="hl">5万</span>即可起奖</li>
+                                    <li>超高奖励：最高<span class="hl">6%</span>，累计20%，收入上不封顶</li>
+                                </ul>
+                                <div class="section-title">收入案例演算 <span class="tool-tag">工具-速算表</span></div>
+                                <ul class="leaf-list">
+                                    <li>入门普通：月5万→月入16150元，年入<span class="hl">19.65万</span></li>
+                                    <li>进阶精英：月30万→月入12万，年入<span class="hl">149.67万</span></li>
+                                    <li>顶级豪门：百万大单→月入<span class="hl">32.45万</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 看发展 ===== -->
+        <div class="branch branch-dev" id="b3">
+            <div class="level1-header" onclick="toggleBranch('b3')">
+                <span class="icon">🚀</span>
+                <span>看发展</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="branch-body">
+                <div class="branch-body-inner">
+                    <div class="level2-group" id="l2_7">
+                        <div class="level2-header" onclick="toggleL2('l2_7')">
+                            <span>📌 短期 · 有支持</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <ul class="leaf-list">
+                                    <li>入职起点高：可为区域总经理、营销总监</li>
+                                    <li>半年零考核：6个月不参与基本法考核</li>
+                                    <li>绝对自主权：创业基金开展团队专属活动</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="level2-group" id="l2_8">
+                        <div class="level2-header" onclick="toggleL2('l2_8')">
+                            <span>📌 中期 · 有赋能</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <ul class="leaf-list">
+                                    <li>专属身份：医养规划师，高净值一站式方案职业经理人</li>
+                                    <li>专属赋能：上海财经大学定制认证培训</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="level2-group" id="l2_9">
+                        <div class="level2-header" onclick="toggleL2('l2_9')">
+                            <span>📌 中期 · 有待遇</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <ul class="leaf-list">
+                                    <li>终身双拥：最高每月<span class="hl">10万</span>，一年<span class="hl">120万</span></li>
+                                    <li>六金二险：生日/新婚/生育/丧葬/社保/体检金 + 员工福利保障</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="level2-group" id="l2_10">
+                        <div class="level2-header" onclick="toggleL2('l2_10')">
+                            <span>📌 长期 · 有事业</span>
+                            <span class="arrow">▶</span>
+                        </div>
+                        <div class="level3-content">
+                            <div class="level3-inner">
+                                <ul class="leaf-list">
+                                    <li>孤儿单双递归+团队传承：薪火相传，共筑长青基业</li>
+                                    <li>拥抱医养事业：比肩医生、律师、会计等专业服务者</li>
+                                    <li>创造行业与社会价值，成就个人梦想与职业尊崇</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 安装提示 -->
+    <div class="install-banner" id="installBanner">
+        <button class="install-btn" id="installBtn" onclick="installApp()">📲 添加到主屏幕</button>
+    </div>
+
+    <script>
+        // 一级分支展开/折叠
+        function toggleBranch(id) {
+            document.getElementById(id).classList.toggle('open');
+        }
+
+        // 二级节点展开/折叠
+        function toggleL2(id) {
+            document.getElementById(id).classList.toggle('open');
+        }
+
+        // 全部展开/折叠切换
+        let allOpen = false;
+        function toggleAll() {
+            allOpen = !allOpen;
+            document.querySelectorAll('.branch').forEach(b => {
+                b.classList.toggle('open', allOpen);
+            });
+            document.querySelectorAll('.level2-group').forEach(g => {
+                g.classList.toggle('open', allOpen);
+            });
+            document.querySelector('.header-btn:last-child').textContent = allOpen ? '📁 全部折叠' : '📂 全部展开';
+        }
+
+        // 搜索功能
+        function toggleSearch() {
+            const overlay = document.getElementById('searchOverlay');
+            overlay.classList.toggle('show');
+            if (overlay.classList.contains('show')) {
+                document.getElementById('searchInput').focus();
+            } else {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchResults').innerHTML = '<div class="search-empty">输入关键词开始搜索</div>';
+            }
+        }
+
+        function doSearch() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            const results = document.getElementById('searchResults');
+            
+            if (!keyword) {
+                results.innerHTML = '<div class="search-empty">输入关键词开始搜索</div>';
+                return;
+            }
+
+            const items = document.querySelectorAll('.leaf-list li');
+            let html = '';
+            let count = 0;
+
+            items.forEach(item => {
+                const text = item.textContent;
+                if (text.includes(keyword)) {
+                    count++;
+                    const highlighted = text.replace(new RegExp(keyword, 'g'), `<mark>${keyword}</mark>`);
+                    html += `<div class="search-item">${highlighted}</div>`;
+                }
+            });
+
+            if (count === 0) {
+                results.innerHTML = '<div class="search-empty">未找到相关内容</div>';
+            } else {
+                results.innerHTML = `<div style="padding:4px 12px;font-size:12px;color:#94a3b8;">找到 ${count} 条结果</div>` + html;
+            }
+        }
+
+        // PWA 安装
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBanner').classList.add('show');
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                    document.getElementById('installBanner').classList.remove('show');
+                });
+            } else {
+                alert('请通过浏览器菜单中的"添加到主屏幕"功能安装此应用');
+            }
+        }
+
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
